@@ -1,6 +1,6 @@
 
 Use:
-Send your position. DBUnico of Mibact will send you Museum into your location with Lic. CC-BY
+Send your position. Endpoint Sparql of Mibact will send you Museum into your location with Lic. CC-BY
 
 Lic. MIT @piersoft
 
