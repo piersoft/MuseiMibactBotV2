@@ -1,6 +1,6 @@
 	<?php
 /**
-* Telegram Bot example for Italian Museums of DBUnico Mibact Lic. CC-BY
+* Telegram Bot example for Italian Museums of DBUnico Mibac Lic. CC-BY
 * @author Francesco Piero Paolicelli @piersoft
 */
 //include("settings_t.php");
@@ -41,7 +41,7 @@ function start($telegram,$update)
 	$today = date("Y-m-d H:i:s");
 
 	if ($text == "/start" || $text == "Info") {
-		$reply = "Benvenuto. Per ricercare un Museo, clicca sulla graffetta (📎) e poi 'posizione' oppure digita il nome del Comune. Verrà interrogato il DataBase del Mibact utilizzabile con licenza CC-BY presente su https://dati.beniculturali.it/. Grazie ai Linked OpenData e alle Query sullo Sparql Endpoint, verranno elencati fino a max 100 musei e luoghi della cultura. In qualsiasi momento scrivendo /start ti ripeterò questo messaggio di benvenuto.\nQuesto bot, non ufficiale, è stato realizzato da @piersoft.\nCodice sorgente -> https://github.com/piersoft/MuseiMibactBotV2.\nLa propria posizione viene ricercata grazie al geocoder di openStreetMap con Lic. odbl.";
+		$reply = "Benvenuto. Per ricercare un Museo, clicca sulla graffetta (📎) e poi 'posizione' oppure digita il nome del Comune. Verrà interrogato il DataBase del MiC (ex Mibact) utilizzabile con licenza CC-BY presente su https://dati.beniculturali.it/. Grazie ai Linked OpenData e alle Query sullo Sparql Endpoint, verranno elencati fino a max 100 musei e luoghi della cultura. In qualsiasi momento scrivendo /start ti ripeterò questo messaggio di benvenuto.\nQuesto bot, non ufficiale, è stato realizzato da @piersoft.\nCodice sorgente -> https://github.com/piersoft/MuseiMibactBotV2.\nLa propria posizione viene ricercata grazie al geocoder di openStreetMap con Lic. odbl.";
 	//	$reply .="\nWelcome. To search for a Museum, click on the paper clip (📎) and then 'position' or type the name of the municipality. It will be questioned DataBase Unique Mibact used with the CC-BY license, and will be listed up to max 50 museums. At any time by writing / start you repeat this welcome message. This bot, unofficially, has been realized by @piersoft and the source code for free reuse is on https://github.com/piersoft/MuseiMibactBot. Its position is searched through the geocoder OpenStreetMap with Lic. ODbL.";
 		$content = array('chat_id' => $chat_id, 'text' => $reply,'disable_web_page_preview'=>true);
 		$telegram->sendMessage($content);
@@ -86,7 +86,7 @@ function start($telegram,$update)
 			$count=0;
 			$divs0   = $doc->{'results'};
 						if (count($doc->{'results'}->{'bindings'})<1) {
-						$content = array('chat_id' => $chat_id, 'text' => "Non ci risultano Musei censiti Mibact in questo luogo",'disable_web_page_preview'=>true);
+						$content = array('chat_id' => $chat_id, 'text' => "Non ci risultano Musei censiti MiC (ex Mibact) in questo luogo",'disable_web_page_preview'=>true);
 							$telegram->sendMessage($content);
 							$this->create_keyboard($telegram,$chat_id);
 								exit;
@@ -208,7 +208,7 @@ if (strpos($text,'/') !== false){
 	$divs0   = $doc->{'results'};
 
 	if (count($doc->{'results'}->{'bindings'})<1) {
-				$content = array('chat_id' => $chat_id, 'text' => "Non ci risultano Musei censiti Mibact in questo luogo",'disable_web_page_preview'=>true);
+				$content = array('chat_id' => $chat_id, 'text' => "Non ci risultano Musei censiti MiC (ex Mibact) in questo luogo",'disable_web_page_preview'=>true);
 					$telegram->sendMessage($content);
 					$this->create_keyboard($telegram,$chat_id);
 						exit;
@@ -297,18 +297,12 @@ if ($count > 50){
 		exit;
 }
 		for ($i=0;$i<$count-1;$i++){
+
 		$alert.="\n\n";
 		$alert.= "*".$diva1[$i]."*\n";
 		$alert.= "".$diva2[$i]."\n";
 		if ($diva3[$i]!=NULL) $alert.= "\n".$diva3[$i];
 		if ($diva4[$i]!=NULL) $alert.= "\nApertura: ".$diva4[$i];
-		if ($diva12[$i]!=NULL) {
-
-			$longUrl = $diva12[$i];
-
-			$alert .="\nFoto/Video: ".$longUrl;
-
-		}
 		if ($diva5[$i]!=NULL)$alert.= "\nSitoweb: ".$diva5[$i];
 		if ($diva6[$i]!=NULL) $alert.= "\nEmail: ".$diva6[$i];
 		if ($diva7[$i]!=NULL)$alert.= "\nTelefono: ".$diva7[$i];
@@ -316,21 +310,55 @@ if ($count > 50){
 		if ($diva13[$i]!=NULL)$alert.= "\nPrenotazione: ".$diva13[$i];
 		if ($diva8[$i]!=NULL) $alert.= "\nChiusura settimanale: ".$diva8[$i];
 
+		if ($diva12[$i]!=NULL) {
+			$diva12[$i]=str_replace(" ","%20",$diva12[$i]);
+			$diva12[$i]=str_replace("’","%E2%80%99",$diva12[$i]);
+			$diva12[$i]=str_replace(",","%2C",$diva12[$i]);
+			//$diva12[$i]=str_replace("/","%2F",$diva12[$i]);
+
+
+			$longUrl = $diva12[$i];
+		//	$img = curl_file_create(file_get_contents($longUrl),'image/png');
+		//	$contentp = array('chat_id' => $chat_id, 'photo' => $img,'disable_web_page_preview'=>false);
+		//	$telegram->sendPhoto($contentp);
+//			$alert .="\nFoto/Video: ".$longUrl;
+
+	function save_image($inPath,$outPath)
+{ //Download images from remote server
+    $in=    fopen($inPath, "rb");
+    $out=   fopen($outPath, "wb");
+    while ($chunk = fread($in,8192))
+    {
+        fwrite($out, $chunk, 8192);
+    }
+    fclose($in);
+    fclose($out);
+}
+
+save_image($longUrl,'/usr/www/piersoft/museimibactbot/db/image.jpg');
+
+		$img = curl_file_create('/usr/www/piersoft/museimibactbot/db/image.jpg','image/png');
+		$contentp = array('chat_id' => $chat_id, 'photo' => $img,'disable_web_page_preview'=>false);
+		$telegram->sendPhoto($contentp);
+
+		}
 
 		if ($diva9[$i]!=NULL){
-						$longUrl = "http://www.openstreetmap.org/?mlat=".$diva9[$i]."&mlon=".$diva10[$i]."#map=19/".$diva9[$i]."/".$diva10[$i];
 
-$option = array( array( $telegram->buildInlineKeyboardButton("Mappa", $url=$longUrl)));
+$longUrl1 = "http://www.openstreetmap.org/?mlat=".$diva9[$i]."&mlon=".$diva10[$i]."#map=19/".$diva9[$i]."/".$diva10[$i];
+
+$option = array( array( $telegram->buildInlineKeyboardButton("Mappa", $url=$longUrl1)));
 $keyb = $telegram->buildInlineKeyBoard($option);
-$content = array('chat_id' => $chat_id, 'reply_markup' => $keyb, 'text' => "Vai alla");
+$content = array('chat_id' => $chat_id, 'reply_markup' => $keyb, 'text' => "📍");
 $telegram->sendMessage($content);
 					}
 
 			$alert.="\n\n__________________";
 
 
-
 	}
+
+
 
 	//	echo $alert;
 
@@ -341,12 +369,13 @@ $telegram->sendMessage($content);
 	//		$content = array('chat_id' => $chat_id, 'text' => $chunk, 'reply_markup' =>$forcehide,'disable_web_page_preview'=>true);
 	$forcehide=$telegram->buildForceReply(true);
 		//chiedo cosa sta accadendo nel luogo
-	$content = array('chat_id' => $chat_id, 'text' => $chunk,'disable_web_page_preview'=>false,'parse_mode'=>'Markdown');
+	$content = array('chat_id' => $chat_id, 'text' => $chunk,'disable_web_page_preview'=>true,'parse_mode'=>'Markdown');
 
 			$telegram->sendMessage($content);
 
 
 		}
+
 			if ($diva12[0]!=NULL) {
 
 		$reply=$shortLink['id'];
@@ -417,13 +446,13 @@ function location_manager($telegram,$user_id,$chat_id,$location)
 					$comune=str_replace(" ","%20",$comune);
 				$text=$comune;
 
-$html=file_get_contents('https://dati.beniculturali.it/sparql?default-graph-uri=&query=select+*+%7B%0D%0Aselect+distinct+%3Fs+as+%3Fsubject%0D%0A%3Fname%0D%0A%3Fdescription+%3FIdentifier%0D%0A%3Flat+%3Flon%0D%0A%3FIndirizzo%0D%0A%3FCodice_postale+%3FComune%0D%0A+%3FImage%0D%0A+%7B%0D%0A+graph+%3Chttp%3A%2F%2Fdati.beniculturali.it%2Fmibact%2Fluoghi%3E+%7B%0D%0A%3Fs+rdf%3Atype+cis%3ACulturalInstituteOrSite+%3B%0D%0A+cis%3AinstitutionalCISName+%3Fname+FILTER+%28lang%28%3Fname%29+%3D+%27it%27%29.%0D%0A%3Fs+l0%3Adescription%3Fdescription+FILTER+%28lang%28%3Fdescription%29+%3D+%27it%27%29.%0D%0A%3Fs+l0%3Aidentifier+%3FIdentifier.%0D%0Aoptional+%7B%3Fs+geo%3Alat+%3Flat%7D.%0D%0Aoptional+%7B%3Fs+geo%3Along+%3Flon%7D.%0D%0Aoptional+%7B%3Fs+foaf%3Adepiction+%3FImage%7D.%0D%0A%0D%0A+%3Fs+cis%3AhasSite+%5Bcis%3AsiteAddress+%3Faddress+%5D+.%0D%0A+%3Faddress+clvapit%3AfullAddress+%3FIndirizzo+filter%28regex%28lcase%28str%28%3FIndirizzo%29%29%2C%22'.$text.'%22%29%29.%0D%0A+%3Faddress+clvapit%3ApostCode+%3FCodice_postale.%0D%0A+%3Faddress+clvapit%3AhasCity+%5Brdfs%3Alabel+%3FComune%5D+filter%28%28lcase%28str%28%3FComune%29%29+%3D+%22'.$text.'%22%29%29.%0D%0A%0D%0A+%0D%0A+%7D%0D%0A%7D%0D%0AORDER+BY+%3Fs%0D%0A+%7D%0D%0A+limit+100%0D%0A+offset+0&format=application%2Fsparql-results%2Bjson&timeout=0&debug=on');
+$html=file_get_contents('https://dati.beniculturali.it/sparql?default-graph-uri=&query=select+*+%7B%0D%0Aselect+distinct+%3Fs+as+%3Fsubject%0D%0A%3Fname%0D%0A%3Fdescription+%3FIdentifier%0D%0A%3Flat+%3Flon%0D%0A%3FIndirizzo%0D%0A%3FCodice_postale+%3FComune%0D%0A+%3FImage%0D%0A+%7B%0D%0A+graph+%3Chttp%3A%2F%2Fdati.beniculturali.it%2Fmibact%2Fluoghi%3E+%7B%0D%0A%3Fs+rdf%3Atype+cis%3ACulturalInstituteOrSite+%3B%0D%0A+cis%3AinstitutionalCISName+%3Fname+FILTER+%28lang%28%3Fname%29+%3D+%27it%27%29.%0D%0A%3Fs+l0%3Adescription%3Fdescription+FILTER+%28lang%28%3Fdescription%29+%3D+%27it%27%29.%0D%0A%3Fs+l0%3Aidentifier+%3FIdentifier.%0D%0Aoptional+%7B%3Fs+geo%3Alat+%3Flat%7D.%0D%0Aoptional+%7B%3Fs+geo%3Along+%3Flon%7D.%0D%0Aoptional+%7B%3Fs+foaf%3Adepiction+%3FImage%7D.%0D%0A%0D%0A+%3Fs+cis%3AhasSite+%5Bcis%3AsiteAddress+%3Faddress+%5D+.%0D%0A+%3Faddress+clvapit%3AfullAddress+%3FIndirizzo+filter%28regex%28lcase%28str%28%3FIndirizzo%29%29%2C%22'.$text.'%22%29%29.%0D%0A+%3Faddress+clvapit%3ApostCode+%3FCodice_postale.%0D%0A+%3Faddress+clvapit%3AhasCity+%5Brdfs%3Alabel+%3FComune%5D+filter%28%28lcase%28str%28%3FComune%29%29+%3D+%22'.$text.'%22%29%29.%0D%0A%0D%0A+%0D%0A+%7D%0D%0A%7D%0D%0AORDER+BY+%3Fs%0D%0A+%7D%0D%0A+limit+1000%0D%0A+offset+0&format=application%2Fsparql-results%2Bjson&timeout=0&debug=on');
 
 	$doc=json_decode($html);
 	$divs0   = $doc->{'results'};
 
 	if (count($doc->{'results'}->{'bindings'})<1) {
-				$content = array('chat_id' => $chat_id, 'text' => "Non ci risultano Musei censiti Mibact in questo luogo",'disable_web_page_preview'=>true);
+				$content = array('chat_id' => $chat_id, 'text' => "Non ci risultano Musei censiti MiC (ex Mibact) in questo luogo",'disable_web_page_preview'=>true);
 					$telegram->sendMessage($content);
 					$this->create_keyboard($telegram,$chat_id);
 						exit;
